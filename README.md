@@ -18,7 +18,7 @@ A tiny widget that allows you to quickly chat in different Stack Exchange chatro
 
 - Type in the text field at the top to quickly send a message to that chatroom.
 
-- Click the username of any message shown in the widget to reply to that message.
+- Hover over the username of any message shown in the widget to reply to, delete, or edit it.
 
 - The timestamp of any message shown also acts as a permalink.
 
