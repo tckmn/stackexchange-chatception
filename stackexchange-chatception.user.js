@@ -15,7 +15,7 @@ window.onload = function() {
 var MSG_LIST_WIDTH = 500,
     MSG_LIST_HEIGHT = 300,
     MSG_LIST_MAX = 50,
-    MSG_LIST_MIN = 10, // TODO preload this many messages
+    MSG_LIST_MIN = 10,
     MSG_LIST_TIMEOUT = 5 * 60 * 1000;
 
 var roomsList = document.getElementById('my-rooms');
@@ -76,17 +76,20 @@ var roomsList = document.getElementById('my-rooms');
     room.addEventListener('mouseleave', function() {
         msgWrapper.style.display = 'none';
     });
+
+    handleEvents(getEvents(room.id.slice(5)));
 });
 
 var sock = getSock();
 sock.onmessage = function(e) {
     var data = JSON.parse(e.data);
-    var events = [].concat.apply([], Object.keys(data).map(function(k) {
+    handleEvents([].concat.apply([], Object.keys(data).map(function(k) {
         return data[k]['e'];
-    })).filter(function(x) { return x; });
-    if (!events) return;
+    })).filter(function(x) { return x; }));
+}
 
-    console.log(events);
+function handleEvents(events) {
+    if (!events) return;
 
     events.forEach(function(msg) {
         var room = document.getElementById('room-' + msg['room_id']);
@@ -123,6 +126,8 @@ sock.onmessage = function(e) {
             var d = new Date(msg['time_stamp'] * 1000);
             msgDateLink.textContent = d.getHours() + ':' +
                 (d.getMinutes() < 10 ? '0' : '') + d.getMinutes();
+            msgDate.className = 'timestamp';
+            msgDate.setAttribute('data-timestamp', (+d) / 1000);
             msgDate.style.padding = '5px';
             msgDate.appendChild(msgDateLink);
             msgRow.appendChild(msgDate);
@@ -132,12 +137,13 @@ sock.onmessage = function(e) {
 
         while (msgList.children.length > MSG_LIST_MAX ||
             (msgList.children.length > MSG_LIST_MIN &&
-             new Date() - (+msgList.lastChild.getElementsByClassName('time')[0].textContent) > MSG_LIST_TIMEOUT)) {
+             new Date() - (+msgList.lastChild.getElementsByClassName('timestamp')[0].getAttribute('data-timestamp')) > MSG_LIST_TIMEOUT)) {
             msgList.removeChild(msgList.lastChild);
         }
     });
 };
 
 function getSock() { return new WebSocket(JSON.parse($.ajax({type: 'POST', url: 'http://' + location.host + '/ws-auth', data: {roomid: CHAT.CURRENT_ROOM_ID, fkey: fkey().fkey}, async: false}).responseText)['url'] + '?l=' + JSON.parse($.ajax({type: 'POST', url: 'http://' + location.host + '/chats/' + CHAT.CURRENT_ROOM_ID + '/events', data: {fkey: fkey().fkey}, async: false}).responseText)['time']); }
+function getEvents(roomid) { return JSON.parse($.ajax({type: 'POST', url: 'http://' + location.host + '/chats/' + roomid + '/events', data: {fkey: fkey().fkey, mode: 'Messages', msgCount: 10, since: 0}, async: false}).responseText)['events']; }
 
 }
