@@ -18,7 +18,9 @@ var MSG_LIST_WIDTH = 500,
 
 var roomsList = document.getElementById('my-rooms');
 
-[].slice.apply(roomsList.getElementsByTagName('li')).forEach(function(room) {
+[].slice.apply(roomsList.getElementsByTagName('li')).forEach(initRoom);
+
+function initRoom(room) {
     var msgWrapper = document.createElement('div');
     var msgList = document.createElement('table');
     msgList.className = 'msgList';
@@ -76,6 +78,15 @@ var roomsList = document.getElementById('my-rooms');
     });
 
     handleEvents(getEvents(room.id.slice(5)));
+}
+
+var observer = new MutationObserver(function(mutations) {
+    [].slice.apply(roomsList.children).forEach(function(room) {
+        if (room.children.length < 4) initRoom(room);
+    });
+});
+observer.observe(roomsList, {
+    childList: true
 });
 
 var sock = getSock();
