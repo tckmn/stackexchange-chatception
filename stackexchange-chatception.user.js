@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name Chatception
 // @namespace http://keyboardfire.com/
-// @version 0.1
+// @version 0.2
 // @description A tiny widget that allows you to quickly chat in different Stack Exchange chatrooms from a single page.
 // @grant none
 // @copyright MIT
@@ -10,7 +10,7 @@
 // @match *://chat.meta.stackexchange.com/*
 // ==/UserScript==
 
-window.onload = function() {
+window.addEventListener('load', function() {
 
 var MSG_LIST_WIDTH = 500,
     MSG_LIST_HEIGHT = 300,
@@ -50,11 +50,11 @@ var roomsList = document.getElementById('my-rooms');
     var sendInput = document.createElement('input');
     sendInput.className = 'sendInput';
     sendInput.style.width = '100%';
-    sendInput.onkeyup = function(e) {
+    sendInput.addEventListener('keyup', function(e) {
         if (e.keyCode === 13) {
             sendMsg();
         }
-    };
+    });
     sendInputTd.style.width = '100%';
     sendInputTd.colSpan = 2;
     sendInputTd.appendChild(sendInput);
@@ -63,7 +63,7 @@ var roomsList = document.getElementById('my-rooms');
     var sendButtonTd = document.createElement('td');
     var sendButton = document.createElement('button');
     sendButton.textContent = 'Send';
-    sendButton.onclick = sendMsg;
+    sendButton.addEventListener('click', sendMsg);
     sendButtonTd.appendChild(sendButton);
     sendMsgWidget.appendChild(sendButtonTd);
     msgList.appendChild(sendMsgWidget);
@@ -102,14 +102,44 @@ function handleEvents(events) {
             var msgUser = document.createElement('td');
             msgUser.textContent = msg['user_name'];
             msgUser.style.padding = '5px';
-            msgUser.style.cursor = 'pointer';
-            msgUser.onclick = function() {
+            msgUser.style.maxWidth = Math.floor(MSG_LIST_WIDTH * 0.15) + 'px';
+            msgUser.style.overflow = 'hidden';
+            var msgActions = document.createElement('div');
+            var actionReply = document.createElement('button');
+            actionReply.textContent = 'reply';
+            actionReply.addEventListener('click', function() {
                 var sendInput = msgList.getElementsByClassName('sendInput')[0];
                 sendInput.value = ':' + msg['message_id'] + ' ' + sendInput.value;
                 sendInput.focus();
-            };
-            msgUser.style.maxWidth = Math.floor(MSG_LIST_WIDTH * 0.15) + 'px';
-            msgUser.style.overflow = 'hidden';
+            });
+            msgActions.appendChild(actionReply);
+            var actionDelete = document.createElement('button');
+            actionDelete.textContent = 'delete';
+            actionDelete.addEventListener('click', function() {
+                $.post('http://' + location.host + '/messages/' + msg['message_id'] + '/delete', {
+                    fkey: fkey().fkey
+                });
+            });
+            msgActions.appendChild(actionDelete);
+            var actionEdit = document.createElement('button');
+            actionEdit.textContent = 'edit';
+            actionEdit.addEventListener('click', function() {
+                $.post('http://' + location.host + '/messages/' + msg['message_id'], {
+                    fkey: fkey().fkey,
+                    text: prompt('Edit to what?', msg['content'])
+                });
+            });
+            msgActions.appendChild(actionEdit);
+            msgActions.style.display = 'none';
+            msgActions.style.position = 'absolute';
+            msgActions.style.zIndex = '1000';
+            msgUser.addEventListener('mouseenter', function() {
+                msgActions.style.display = 'block';
+            });
+            msgUser.addEventListener('mouseleave', function() {
+                msgActions.style.display = 'none';
+            });
+            msgUser.appendChild(msgActions);
             msgRow.appendChild(msgUser);
 
             var msgContent = document.createElement('td');
@@ -159,4 +189,4 @@ function handleEvents(events) {
 function getSock() { return new WebSocket(JSON.parse($.ajax({type: 'POST', url: 'http://' + location.host + '/ws-auth', data: {roomid: CHAT.CURRENT_ROOM_ID, fkey: fkey().fkey}, async: false}).responseText)['url'] + '?l=' + JSON.parse($.ajax({type: 'POST', url: 'http://' + location.host + '/chats/' + CHAT.CURRENT_ROOM_ID + '/events', data: {fkey: fkey().fkey}, async: false}).responseText)['time']); }
 function getEvents(roomid) { return JSON.parse($.ajax({type: 'POST', url: 'http://' + location.host + '/chats/' + roomid + '/events', data: {fkey: fkey().fkey, mode: 'Messages', msgCount: 10, since: 0}, async: false}).responseText)['events']; }
 
-}
+});
