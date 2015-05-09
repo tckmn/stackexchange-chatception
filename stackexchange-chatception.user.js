@@ -14,9 +14,7 @@ window.onload = function() {
 
 var MSG_LIST_WIDTH = 500,
     MSG_LIST_HEIGHT = 300,
-    MSG_LIST_MAX = 50,
-    MSG_LIST_MIN = 10,
-    MSG_LIST_TIMEOUT = 5 * 60 * 1000;
+    MSG_LIST_MAX = 100;
 
 var roomsList = document.getElementById('my-rooms');
 
@@ -135,9 +133,7 @@ function handleEvents(events) {
             msgList.insertBefore(msgRow, msgList.firstChild.nextSibling);
         }
 
-        while (msgList.children.length > MSG_LIST_MAX ||
-            (msgList.children.length > MSG_LIST_MIN &&
-             new Date() - (+msgList.lastChild.getElementsByClassName('timestamp')[0].getAttribute('data-timestamp')) > MSG_LIST_TIMEOUT)) {
+        while (msgList.children.length > MSG_LIST_MAX) {
             msgList.removeChild(msgList.lastChild);
         }
     });
