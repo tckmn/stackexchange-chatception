@@ -21,3 +21,7 @@ A tiny widget that allows you to quickly chat in different Stack Exchange chatro
 - Click the username of any message shown in the widget to reply to that message.
 
 - The timestamp of any message shown also acts as a permalink.
+
+## StackApps post
+
+I also posted this [on StackApps](http://stackapps.com/q/6314/17430) (which is just this README.md copy/pasted).
