@@ -122,8 +122,13 @@ function handleEvents(events) {
             var msgDateLink = document.createElement('a');
             msgDateLink.href = 'http://' + location.host + '/transcript/message/' + msg['message_id'] + '#' + msg['message_id'];
             var d = new Date(msg['time_stamp'] * 1000);
-            msgDateLink.textContent = d.getHours() + ':' +
-                (d.getMinutes() < 10 ? '0' : '') + d.getMinutes();
+            var days = Math.floor(new Date().getTime() / (3600*24*1000)) - Math.floor(d.getTime() / (3600*24*1000));
+            if (days) {
+                msgDateLink.textContent = days + 'd ago';
+            } else {
+                msgDateLink.textContent = d.getHours() + ':' +
+                    (d.getMinutes() < 10 ? '0' : '') + d.getMinutes();
+            }
             msgDate.className = 'timestamp';
             msgDate.setAttribute('data-timestamp', (+d) / 1000);
             msgDate.style.padding = '5px';
