@@ -113,7 +113,9 @@ function handleEvents(events) {
             msgRow.appendChild(msgUser);
 
             var msgContent = document.createElement('td');
-            msgContent.innerHTML = msg['content'];
+            msgContent.innerHTML = msg['content'] === undefined ?
+                '<em style="color:grey">(removed)</em>' : msg['content'];
+            msgContent.id = 'chatception-msg' + msg['message_id'];
             msgContent.style.padding = '5px';
             msgContent.style.width = '100%';
             msgRow.appendChild(msgContent);
@@ -136,6 +138,16 @@ function handleEvents(events) {
             msgRow.appendChild(msgDate);
 
             msgList.insertBefore(msgRow, msgList.firstChild.nextSibling);
+        } else if (msg['event_type'] === 2) {
+            var msgContent = document.getElementById('chatception-msg' + msg['message_id']);
+            if (msgContent) {
+                msgContent.innerHTML = msg['content'];
+            }
+        } else if (msg['event_type'] === 10) {
+            var msgContent = document.getElementById('chatception-msg' + msg['message_id']);
+            if (msgContent) {
+                msgContent.innerHTML = '<em style="color:grey">(removed)</em>';
+            }
         }
 
         while (msgList.children.length > MSG_LIST_MAX) {
