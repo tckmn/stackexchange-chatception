@@ -22,6 +22,8 @@ A tiny widget that allows you to quickly chat in different Stack Exchange chatro
 
 - The timestamp of any message shown also acts as a permalink.
 
+- The amount of unread messages will show up in `[brackets]` next to the room names in the sidebar, and a total will be displayed in brackets in the title of the page (right next to the number in `(parentheses)` that shows the amount of unread messages in the current room, which stays intact).
+
 ## StackApps post
 
 I also posted this [on StackApps](http://stackapps.com/q/6314/17430) (which is just this README.md copy/pasted).

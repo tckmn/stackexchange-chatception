@@ -2,7 +2,7 @@
 // @name Chatception
 // @namespace http://keyboardfire.com/
 // @author SE user Doorknob <andy@keyboardfire.com>
-// @version 0.2
+// @version 0.3
 // @description A tiny widget that allows you to quickly chat in different Stack Exchange chatrooms from a single page.
 // @grant none
 // @copyright MIT
@@ -15,6 +15,23 @@ function chatception($) {
 
 // this is taken from http://cdn-chat.sstatic.net/chat/Js/master-chat.js
 var autoLink=function(){function e(e,s){if(e=t(e),e.length<s)return e;for(var n=e.length-1;n>0;n--)if("/"==e[n]&&s>n)return e.substring(0,n)+"/&hellip;";return e.substring(0,s-1)+"&hellip;"}function t(e){return e.replace(a,"")}function s(t){return'<a href="'+t.replace(r,"")+'">'+e(t,30)+"</a>"}function n(e,t,n){if(")"!==n.charAt(n.length-1))return t+s(n);for(var i=n.match(/[()]/g),a=0,o=0;o<i.length;o++)"("===i[o]?0>=a?a=1:a++:a--;var r="";if(0>a){var l=new RegExp("\\){1,"+-a+"}$");n=n.replace(l,function(e){return r=e,""})}return t+s(n)+r}var i=/([^">;]|^)\b((?:https?|ftp):\/\/[A-Za-z0-9][-A-Za-z0-9+&@#\/%?=~_|\[\]\(\)!:,.;]*[-A-Za-z0-9+&@#\/%=~_|\[\])])/gi,a=/^(https?|ftp):\/\/(www\.)?|(\/$)/gi,o="&zwnj;&#8203;",r=new RegExp(o,"g"),l=new RegExp($("<span>"+o+"</span>").text(),"g");return function(e){return e.replace(l,o).replace(i,n)}}();
+
+// used for the [12345] display of unread messages
+function addUnread(n, s) {
+    if (n === 0) return s;
+    var m;
+    if (m = s.match(/^(?:\(\d*\*?\) )?\[(\d+)\]/)) {
+        var newCount = +m[1] + n;
+        return s.replace(/\[\d+\] /, newCount ? '[' + newCount + '] ' : '');
+    } else if (m = s.match(/^\(\d*\*?\)/)) {
+        return s.replace(/^(\(\d*\*?\))/, '$1 [' + n + ']');
+    } else {
+        return '[' + n + '] ' + s;
+    }
+}
+function unreadCount(s) {
+    return +(s.match(/^(?:\(\d*\*?\) )?\[(\d+)\]/) || [0,0])[1];
+}
 
 var MSG_LIST_WIDTH = 500,
     MSG_LIST_HEIGHT = 300,
@@ -80,6 +97,12 @@ function initRoom(room) {
     room.addEventListener('mouseenter', function() {
         msgWrapper.style.display = 'block';
         msgWrapper.scrollTop = msgWrapper.scrollHeight;
+        // clear unread messages, if any
+        var links = room.querySelectorAll('li>a');
+        var rn = links[links.length-1];
+        var unread = unreadCount(rn.textContent);
+        rn.textContent = addUnread(-unread, rn.textContent);
+        document.title = addUnread(-unread, document.title);
     });
     room.addEventListener('mouseleave', function() {
         msgWrapper.style.display = 'none';
@@ -87,13 +110,13 @@ function initRoom(room) {
 
     // preload a few initial messages
     // (room.id is "room-12345", slice(5) removes "room-")
-    getEvents(room.id.slice(5), handleEvents);
+    getEvents(room.id.slice(5), function(x) { handleEvents(x, true); });
 }
 
 // add popup boxes to newly joined rooms
 var observer = new MutationObserver(function(mutations) {
     [].slice.apply(roomsList.children).forEach(function(room) {
-        if (room.children.length < 4) initRoom(room);
+        if (room.getElementsByClassName('msgList').length === 0) initRoom(room);
     });
 });
 observer.observe(roomsList, { childList: true });
@@ -107,7 +130,7 @@ sock.onmessage = function(e) {
     })).filter(function(x) { return x; }));
 }
 
-function handleEvents(events) {
+function handleEvents(events, suppressUnread) {
     if (!events) return;
 
     events.forEach(function(msg) {
@@ -206,6 +229,15 @@ function handleEvents(events) {
             // add the message
             msgList.insertBefore(msgRow, msgList.lastChild);
             msgList.parentNode.scrollTop = msgList.parentNode.scrollHeight;
+
+            // increment the "unread messages" counter
+            if (!suppressUnread && room.lastChild.style.display === 'none') {
+                var links = room.querySelectorAll('li>a');
+                var rn = links[links.length-1];
+                var unread = unreadCount(rn.textContent);
+                rn.textContent = addUnread(1, rn.textContent);
+                document.title = addUnread(1, document.title);
+            }
         } else if (msg['event_type'] === 2) { // MessageEdited
             var msgContent = document.getElementById('chatception-msg' + msg['message_id']);
             if (msgContent) {
