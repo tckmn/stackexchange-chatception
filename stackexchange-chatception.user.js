@@ -80,7 +80,7 @@ function initRoom(room) {
         msgWrapper.style.display = 'none';
     });
 
-    handleEvents(getEvents(room.id.slice(5)));
+    getEvents(room.id.slice(5), handleEvents);
 }
 
 var observer = new MutationObserver(function(mutations) {
@@ -202,6 +202,13 @@ function handleEvents(events) {
 };
 
 function getSock() { return new WebSocket(JSON.parse($.ajax({type: 'POST', url: 'http://' + location.host + '/ws-auth', data: {roomid: CHAT.CURRENT_ROOM_ID, fkey: fkey().fkey}, async: false}).responseText)['url'] + '?l=' + JSON.parse($.ajax({type: 'POST', url: 'http://' + location.host + '/chats/' + CHAT.CURRENT_ROOM_ID + '/events', data: {fkey: fkey().fkey}, async: false}).responseText)['time']); }
-function getEvents(roomid) { return JSON.parse($.ajax({type: 'POST', url: 'http://' + location.host + '/chats/' + roomid + '/events', data: {fkey: fkey().fkey, mode: 'Messages', msgCount: 10, since: 0}, async: false}).responseText)['events']; }
+function getEvents(roomid, callback) {
+    $.ajax({
+        type: 'POST',
+        url: 'http://' + location.host + '/chats/' + roomid + '/events',
+        data: {fkey: fkey().fkey, mode: 'Messages', msgCount: 10, since: 0},
+        success: function(data) { callback(data['events']); }
+    });
+}
 
 });
