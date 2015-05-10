@@ -13,6 +13,9 @@
 
 function chatception($) {
 
+// this is taken from http://cdn-chat.sstatic.net/chat/Js/master-chat.js
+var autoLink=function(){function e(e,s){if(e=t(e),e.length<s)return e;for(var n=e.length-1;n>0;n--)if("/"==e[n]&&s>n)return e.substring(0,n)+"/&hellip;";return e.substring(0,s-1)+"&hellip;"}function t(e){return e.replace(a,"")}function s(t){return'<a href="'+t.replace(r,"")+'">'+e(t,30)+"</a>"}function n(e,t,n){if(")"!==n.charAt(n.length-1))return t+s(n);for(var i=n.match(/[()]/g),a=0,o=0;o<i.length;o++)"("===i[o]?0>=a?a=1:a++:a--;var r="";if(0>a){var l=new RegExp("\\){1,"+-a+"}$");n=n.replace(l,function(e){return r=e,""})}return t+s(n)+r}var i=/([^">;]|^)\b((?:https?|ftp):\/\/[A-Za-z0-9][-A-Za-z0-9+&@#\/%?=~_|\[\]\(\)!:,.;]*[-A-Za-z0-9+&@#\/%=~_|\[\])])/gi,a=/^(https?|ftp):\/\/(www\.)?|(\/$)/gi,o="&zwnj;&#8203;",r=new RegExp(o,"g"),l=new RegExp($("<span>"+o+"</span>").text(),"g");return function(e){return e.replace(l,o).replace(i,n)}}();
+
 var MSG_LIST_WIDTH = 500,
     MSG_LIST_HEIGHT = 300,
     MSG_LIST_MAX = 100;
@@ -178,7 +181,7 @@ function handleEvents(events) {
             var msgContent = document.createElement('td');
             msgContent.innerHTML = msg['content'] === undefined ?
                 '<em style="color:grey">(removed)</em>' :
-                msg['content'].replace(/^<pre([^>]*)>/, '<pre$1 style="white-space:pre-wrap">');
+                autoLink(msg['content'].replace(/^<pre([^>]*)>/, '<pre$1 style="white-space:pre-wrap">'));
             msgContent.id = 'chatception-msg' + msg['message_id'];
             msgContent.style.padding = '5px';
             msgContent.style.width = '100%';
