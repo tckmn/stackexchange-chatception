@@ -5,9 +5,9 @@
 // @description A tiny widget that allows you to quickly chat in different Stack Exchange chatrooms from a single page.
 // @grant none
 // @copyright MIT
-// @match *://chat.stackoverflow.com/*
-// @match *://chat.stackexchange.com/*
-// @match *://chat.meta.stackexchange.com/*
+// @include *://chat.stackoverflow.com/*
+// @include *://chat.stackexchange.com/*
+// @include *://chat.meta.stackexchange.com/*
 // ==/UserScript==
 
 window.addEventListener('load', function() {
