@@ -58,6 +58,8 @@ function initRoom(room) {
         }
     });
     sendInputTd.style.width = '100%';
+    sendInputTd.style.overflow = 'hidden';
+    sendInputTd.style.paddingRight = '10px';
     sendInputTd.colSpan = 2;
     sendInputTd.appendChild(sendInput);
     sendMsgWidget.appendChild(sendInputTd);
