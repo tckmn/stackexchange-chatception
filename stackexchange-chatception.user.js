@@ -217,7 +217,7 @@ function handleEvents(events) {
 
         // remove excess messages
         while (msgList.children.length > MSG_LIST_MAX) {
-            msgList.removeChild(msgList.lastChild.previousSibling);
+            msgList.removeChild(msgList.firstChild);
         }
     });
 };
