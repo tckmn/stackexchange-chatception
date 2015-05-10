@@ -170,9 +170,11 @@ function handleEvents(events, suppressUnread) {
                 var actionDelete = document.createElement('button');
                 actionDelete.textContent = 'delete';
                 actionDelete.addEventListener('click', function() {
-                    $.post('http://' + location.host + '/messages/' + msg['message_id'] + '/delete', {
-                        fkey: fkey().fkey
-                    });
+                    if (confirm('Are you sure you want to delete this message?')) {
+                        $.post('http://' + location.host + '/messages/' + msg['message_id'] + '/delete', {
+                            fkey: fkey().fkey
+                        });
+                    }
                 });
                 msgActions.appendChild(actionDelete);
                 // edit message
