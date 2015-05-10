@@ -181,9 +181,10 @@ function handleEvents(events, suppressUnread) {
                 var actionEdit = document.createElement('button');
                 actionEdit.textContent = 'edit';
                 actionEdit.addEventListener('click', function() {
+                    var editTo = prompt('Edit to what?', msg['content']);
                     $.post('http://' + location.host + '/messages/' + msg['message_id'], {
                         fkey: fkey().fkey,
-                        text: prompt('Edit to what?', msg['content'])
+                        text: editTo === null ? msg['content'] : editTo
                     });
                 });
                 msgActions.appendChild(actionEdit);
