@@ -217,7 +217,7 @@ function handleEvents(events) {
 
         // remove excess messages
         while (msgList.children.length > MSG_LIST_MAX) {
-            msgList.removeChild(msgList.lastChild);
+            msgList.removeChild(msgList.lastChild.previousSibling);
         }
     });
 };
@@ -229,7 +229,7 @@ function getEvents(roomid, callback) {
     $.ajax({
         type: 'POST',
         url: 'http://' + location.host + '/chats/' + roomid + '/events',
-        data: {fkey: fkey().fkey, mode: 'Messages', msgCount: 10, since: 0},
+        data: {fkey: fkey().fkey, mode: 'Messages', msgCount: MSG_LIST_MAX-1, since: 0},
         success: function(data) { callback(data['events']); }
     });
 }
