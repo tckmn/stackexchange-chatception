@@ -1,4 +1,4 @@
-# stackexchange-chatception
+# Chatception - quickly chat in different rooms from a single page (v0.3)
 
 ## TL;DR
 
