@@ -10,7 +10,7 @@
 // @include *://chat.meta.stackexchange.com/*
 // ==/UserScript==
 
-window.addEventListener('load', function() {
+function chatception($) {
 
 var MSG_LIST_WIDTH = 500,
     MSG_LIST_HEIGHT = 300,
@@ -211,4 +211,11 @@ function getEvents(roomid, callback) {
     });
 }
 
+}
+
+window.addEventListener('load', function() {
+    var scriptEl = document.createElement('script');
+    scriptEl.type = 'text/javascript';
+    scriptEl.text = '(' + chatception + ')(jQuery);';
+    document.head.appendChild(scriptEl);
 });
