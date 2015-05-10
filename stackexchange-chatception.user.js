@@ -72,6 +72,7 @@ function initRoom(room) {
 
     room.addEventListener('mouseenter', function() {
         msgWrapper.style.display = 'block';
+        msgWrapper.scrollTop = msgWrapper.scrollHeight;
     });
     room.addEventListener('mouseleave', function() {
         msgWrapper.style.display = 'none';
@@ -178,7 +179,8 @@ function handleEvents(events) {
             msgDate.appendChild(msgDateLink);
             msgRow.appendChild(msgDate);
 
-            msgList.insertBefore(msgRow, msgList.firstChild.nextSibling);
+            msgList.insertBefore(msgRow, msgList.lastChild);
+            msgList.parentNode.scrollTop = msgList.parentNode.scrollHeight;
         } else if (msg['event_type'] === 2) {
             var msgContent = document.getElementById('chatception-msg' + msg['message_id']);
             if (msgContent) {
