@@ -177,7 +177,8 @@ function handleEvents(events) {
             // actual message content
             var msgContent = document.createElement('td');
             msgContent.innerHTML = msg['content'] === undefined ?
-                '<em style="color:grey">(removed)</em>' : msg['content'];
+                '<em style="color:grey">(removed)</em>' :
+                msg['content'].replace(/^<pre([^>]*)>/, '<pre$1 style="white-space:pre-wrap">');
             msgContent.id = 'chatception-msg' + msg['message_id'];
             msgContent.style.padding = '5px';
             msgContent.style.width = '100%';
