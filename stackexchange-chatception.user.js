@@ -119,31 +119,36 @@ function handleEvents(events) {
             msgUser.style.maxWidth = Math.floor(MSG_LIST_WIDTH * 0.15) + 'px';
             msgUser.style.overflow = 'hidden';
             var msgActions = document.createElement('div');
-            var actionReply = document.createElement('button');
-            actionReply.textContent = 'reply';
-            actionReply.addEventListener('click', function() {
-                var sendInput = msgList.getElementsByClassName('sendInput')[0];
-                sendInput.value = ':' + msg['message_id'] + ' ' + sendInput.value;
-                sendInput.focus();
-            });
-            msgActions.appendChild(actionReply);
-            var actionDelete = document.createElement('button');
-            actionDelete.textContent = 'delete';
-            actionDelete.addEventListener('click', function() {
-                $.post('http://' + location.host + '/messages/' + msg['message_id'] + '/delete', {
-                    fkey: fkey().fkey
+            var me = CHAT.RoomUsers.current();
+            if (msg['user_id'] != me.id) {
+                var actionReply = document.createElement('button');
+                actionReply.textContent = 'reply';
+                actionReply.addEventListener('click', function() {
+                    var sendInput = msgList.getElementsByClassName('sendInput')[0];
+                    sendInput.value = ':' + msg['message_id'] + ' ' + sendInput.value;
+                    sendInput.focus();
                 });
-            });
-            msgActions.appendChild(actionDelete);
-            var actionEdit = document.createElement('button');
-            actionEdit.textContent = 'edit';
-            actionEdit.addEventListener('click', function() {
-                $.post('http://' + location.host + '/messages/' + msg['message_id'], {
-                    fkey: fkey().fkey,
-                    text: prompt('Edit to what?', msg['content'])
+                msgActions.appendChild(actionReply);
+            }
+            if (msg['user_id'] == me.id || me.is_moderator) {
+                var actionDelete = document.createElement('button');
+                actionDelete.textContent = 'delete';
+                actionDelete.addEventListener('click', function() {
+                    $.post('http://' + location.host + '/messages/' + msg['message_id'] + '/delete', {
+                        fkey: fkey().fkey
+                    });
                 });
-            });
-            msgActions.appendChild(actionEdit);
+                msgActions.appendChild(actionDelete);
+                var actionEdit = document.createElement('button');
+                actionEdit.textContent = 'edit';
+                actionEdit.addEventListener('click', function() {
+                    $.post('http://' + location.host + '/messages/' + msg['message_id'], {
+                        fkey: fkey().fkey,
+                        text: prompt('Edit to what?', msg['content'])
+                    });
+                });
+                msgActions.appendChild(actionEdit);
+            }
             msgActions.style.display = 'none';
             msgActions.style.position = 'absolute';
             msgActions.style.zIndex = '1000';
