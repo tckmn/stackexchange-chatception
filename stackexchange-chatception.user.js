@@ -80,7 +80,6 @@ function initRoom(room) {
     handleEvents(getEvents(room.id.slice(5)));
 }
 
-MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
 var observer = new MutationObserver(function(mutations) {
     [].slice.apply(roomsList.children).forEach(function(room) {
         if (room.children.length < 4) initRoom(room);
