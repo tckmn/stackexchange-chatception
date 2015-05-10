@@ -1,6 +1,7 @@
 // ==UserScript==
 // @name Chatception
 // @namespace http://keyboardfire.com/
+// @author SE user Doorknob <andy@keyboardfire.com>
 // @version 0.2
 // @description A tiny widget that allows you to quickly chat in different Stack Exchange chatrooms from a single page.
 // @grant none
@@ -16,11 +17,12 @@ var MSG_LIST_WIDTH = 500,
     MSG_LIST_HEIGHT = 300,
     MSG_LIST_MAX = 100;
 
+// add the popup box to each room in the sidebar
 var roomsList = document.getElementById('my-rooms');
-
 [].slice.apply(roomsList.getElementsByTagName('li')).forEach(initRoom);
 
 function initRoom(room) {
+    // the container for the messages (shown on hover)
     var msgWrapper = document.createElement('div');
     var msgList = document.createElement('table');
     msgList.className = 'msgList';
@@ -39,6 +41,7 @@ function initRoom(room) {
     msgWrapper.appendChild(msgList);
     room.appendChild(msgWrapper);
 
+    // input box and button to send messages
     var sendMsg = function() {
         $.post('http://' + location.host + '/chats/' + room.id.slice(5) + '/messages/new', {
             text: sendInput.value,
@@ -46,16 +49,14 @@ function initRoom(room) {
         });
         sendInput.value = '';
     };
-
     var sendMsgWidget = document.createElement('tr');
+    // text field
     var sendInputTd = document.createElement('td');
     var sendInput = document.createElement('input');
     sendInput.className = 'sendInput';
     sendInput.style.width = '100%';
     sendInput.addEventListener('keyup', function(e) {
-        if (e.keyCode === 13) {
-            sendMsg();
-        }
+        if (e.keyCode === 13 /* enter */) sendMsg();
     });
     sendInputTd.style.width = '100%';
     sendInputTd.style.overflow = 'hidden';
@@ -63,7 +64,7 @@ function initRoom(room) {
     sendInputTd.colSpan = 2;
     sendInputTd.appendChild(sendInput);
     sendMsgWidget.appendChild(sendInputTd);
-
+    // button
     var sendButtonTd = document.createElement('td');
     var sendButton = document.createElement('button');
     sendButton.textContent = 'Send';
@@ -72,6 +73,7 @@ function initRoom(room) {
     sendMsgWidget.appendChild(sendButtonTd);
     msgList.appendChild(sendMsgWidget);
 
+    // add hooks to display the popup
     room.addEventListener('mouseenter', function() {
         msgWrapper.style.display = 'block';
         msgWrapper.scrollTop = msgWrapper.scrollHeight;
@@ -80,18 +82,20 @@ function initRoom(room) {
         msgWrapper.style.display = 'none';
     });
 
+    // preload a few initial messages
+    // (room.id is "room-12345", slice(5) removes "room-")
     getEvents(room.id.slice(5), handleEvents);
 }
 
+// add popup boxes to newly joined rooms
 var observer = new MutationObserver(function(mutations) {
     [].slice.apply(roomsList.children).forEach(function(room) {
         if (room.children.length < 4) initRoom(room);
     });
 });
-observer.observe(roomsList, {
-    childList: true
-});
+observer.observe(roomsList, { childList: true });
 
+// set up websocket
 var sock = getSock();
 sock.onmessage = function(e) {
     var data = JSON.parse(e.data);
@@ -109,10 +113,12 @@ function handleEvents(events) {
 
         if (!msgList) return;
 
-        if (msg['event_type'] === 1) {
+        if (msg['event_type'] === 1) { // MessagePosted
             var msgRow = document.createElement('tr');
             msgRow.style.height = 'auto';
 
+            // username of the user who posted the message
+            // also a popup menu for message actions (reply, edit, delete)
             var msgUser = document.createElement('td');
             msgUser.textContent = msg['user_name'];
             msgUser.style.padding = '5px';
@@ -120,7 +126,9 @@ function handleEvents(events) {
             msgUser.style.overflow = 'hidden';
             var msgActions = document.createElement('div');
             var me = CHAT.RoomUsers.current();
+
             if (msg['user_id'] != me.id) {
+                // reply to message
                 var actionReply = document.createElement('button');
                 actionReply.textContent = 'reply';
                 actionReply.addEventListener('click', function() {
@@ -130,7 +138,9 @@ function handleEvents(events) {
                 });
                 msgActions.appendChild(actionReply);
             }
+
             if (msg['user_id'] == me.id || me.is_moderator) {
+                // delete message
                 var actionDelete = document.createElement('button');
                 actionDelete.textContent = 'delete';
                 actionDelete.addEventListener('click', function() {
@@ -139,6 +149,7 @@ function handleEvents(events) {
                     });
                 });
                 msgActions.appendChild(actionDelete);
+                // edit message
                 var actionEdit = document.createElement('button');
                 actionEdit.textContent = 'edit';
                 actionEdit.addEventListener('click', function() {
@@ -149,9 +160,11 @@ function handleEvents(events) {
                 });
                 msgActions.appendChild(actionEdit);
             }
+
             msgActions.style.display = 'none';
             msgActions.style.position = 'absolute';
             msgActions.style.zIndex = '1000';
+            // hook for popup
             msgUser.addEventListener('mouseenter', function() {
                 msgActions.style.display = 'block';
             });
@@ -161,6 +174,7 @@ function handleEvents(events) {
             msgUser.appendChild(msgActions);
             msgRow.appendChild(msgUser);
 
+            // actual message content
             var msgContent = document.createElement('td');
             msgContent.innerHTML = msg['content'] === undefined ?
                 '<em style="color:grey">(removed)</em>' : msg['content'];
@@ -169,6 +183,7 @@ function handleEvents(events) {
             msgContent.style.width = '100%';
             msgRow.appendChild(msgContent);
 
+            // timestamp and permalink
             var msgDate = document.createElement('td');
             var msgDateLink = document.createElement('a');
             msgDateLink.href = 'http://' + location.host + '/transcript/message/' + msg['message_id'] + '#' + msg['message_id'];
@@ -180,33 +195,35 @@ function handleEvents(events) {
                 msgDateLink.textContent = d.getHours() + ':' +
                     (d.getMinutes() < 10 ? '0' : '') + d.getMinutes();
             }
-            msgDate.className = 'timestamp';
-            msgDate.setAttribute('data-timestamp', (+d) / 1000);
             msgDate.style.padding = '5px';
             msgDate.appendChild(msgDateLink);
             msgRow.appendChild(msgDate);
 
+            // add the message
             msgList.insertBefore(msgRow, msgList.lastChild);
             msgList.parentNode.scrollTop = msgList.parentNode.scrollHeight;
-        } else if (msg['event_type'] === 2) {
+        } else if (msg['event_type'] === 2) { // MessageEdited
             var msgContent = document.getElementById('chatception-msg' + msg['message_id']);
             if (msgContent) {
                 msgContent.innerHTML = msg['content'];
             }
-        } else if (msg['event_type'] === 10) {
+        } else if (msg['event_type'] === 10) { // MessageDeleted
             var msgContent = document.getElementById('chatception-msg' + msg['message_id']);
             if (msgContent) {
                 msgContent.innerHTML = '<em style="color:grey">(removed)</em>';
             }
         }
 
+        // remove excess messages
         while (msgList.children.length > MSG_LIST_MAX) {
             msgList.removeChild(msgList.lastChild);
         }
     });
 };
 
+// get the WebSocket object for chat. TODO: make this async.
 function getSock() { return new WebSocket(JSON.parse($.ajax({type: 'POST', url: 'http://' + location.host + '/ws-auth', data: {roomid: CHAT.CURRENT_ROOM_ID, fkey: fkey().fkey}, async: false}).responseText)['url'] + '?l=' + JSON.parse($.ajax({type: 'POST', url: 'http://' + location.host + '/chats/' + CHAT.CURRENT_ROOM_ID + '/events', data: {fkey: fkey().fkey}, async: false}).responseText)['time']); }
+// preload some previous messages (used when the page first loads)
 function getEvents(roomid, callback) {
     $.ajax({
         type: 'POST',
@@ -218,6 +235,8 @@ function getEvents(roomid, callback) {
 
 }
 
+// inject the code as a <script> element, because Safari doesn't seem to be
+// using the page's jQuery properly
 window.addEventListener('load', function() {
     var scriptEl = document.createElement('script');
     scriptEl.type = 'text/javascript';
