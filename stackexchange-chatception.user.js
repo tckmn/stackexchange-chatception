@@ -244,7 +244,9 @@ function handleEvents(events, suppressUnread) {
         } else if (msg['event_type'] === 2) { // MessageEdited
             var msgContent = document.getElementById('chatception-msg' + msg['message_id']);
             if (msgContent) {
-                msgContent.innerHTML = msg['content'];
+                msgContent.innerHTML = msg['content'] === undefined ?
+                    '<em style="color:grey">(removed)</em>' :
+                    autoLink(msg['content'].replace(/^<pre([^>]*)>/, '<pre$1 style="white-space:pre-wrap">'));
             }
         } else if (msg['event_type'] === 10) { // MessageDeleted
             var msgContent = document.getElementById('chatception-msg' + msg['message_id']);
