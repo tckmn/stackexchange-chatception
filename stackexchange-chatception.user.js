@@ -145,7 +145,9 @@ function handleEvents(events, suppressUnread) {
 
             // username of the user who posted the message
             // also a popup menu for message actions (reply, edit, delete)
-            var msgUser = document.createElement('td');
+            var msgUserContainer = document.createElement('td');
+            var msgUser = document.createElement('a');
+            msgUser.href = 'http://' + location.host + '/users/' + msg['user_id'];
             msgUser.textContent = msg['user_name'];
             msgUser.style.padding = '5px';
             msgUser.style.maxWidth = Math.floor(MSG_LIST_WIDTH * 0.15) + 'px';
