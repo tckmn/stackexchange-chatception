@@ -11,7 +11,16 @@
 // @include *://chat.meta.stackexchange.com/*
 // ==/UserScript==
 
-function chatception($) {
+// this will inject the code as a <script> element, because Safari doesn't seem to be
+// using the page's jQuery properly
+function with_jquery(f) {
+    var script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.textContent = "(" + f.toString() + ")(jQuery)";
+    document.body.appendChild(script);
+}
+
+with_jquery(function($) {
 
 // this is taken from http://cdn-chat.sstatic.net/chat/Js/master-chat.js
 var autoLink=function(){function e(e,s){if(e=t(e),e.length<s)return e;for(var n=e.length-1;n>0;n--)if("/"==e[n]&&s>n)return e.substring(0,n)+"/&hellip;";return e.substring(0,s-1)+"&hellip;"}function t(e){return e.replace(a,"")}function s(t){return'<a href="'+t.replace(r,"")+'">'+e(t,30)+"</a>"}function n(e,t,n){if(")"!==n.charAt(n.length-1))return t+s(n);for(var i=n.match(/[()]/g),a=0,o=0;o<i.length;o++)"("===i[o]?0>=a?a=1:a++:a--;var r="";if(0>a){var l=new RegExp("\\){1,"+-a+"}$");n=n.replace(l,function(e){return r=e,""})}return t+s(n)+r}var i=/([^">;]|^)\b((?:https?|ftp):\/\/[A-Za-z0-9][-A-Za-z0-9+&@#\/%?=~_|\[\]\(\)!:,.;]*[-A-Za-z0-9+&@#\/%=~_|\[\])])/gi,a=/^(https?|ftp):\/\/(www\.)?|(\/$)/gi,o="&zwnj;&#8203;",r=new RegExp(o,"g"),l=new RegExp($("<span>"+o+"</span>").text(),"g");return function(e){return e.replace(l,o).replace(i,n)}}();
@@ -277,13 +286,11 @@ function getEvents(roomid, callback) {
     });
 }
 
-}
-
-// inject the code as a <script> element, because Safari doesn't seem to be
-// using the page's jQuery properly
-window.addEventListener('load', function() {
-    var scriptEl = document.createElement('script');
-    scriptEl.type = 'text/javascript';
-    scriptEl.text = '(' + chatception + ')(jQuery);';
-    document.head.appendChild(scriptEl);
 });
+
+// window.addEventListener('load', function() {
+//     var scriptEl = document.createElement('script');
+//     scriptEl.type = 'text/javascript';
+//     scriptEl.text = '(' + chatception + ')(jQuery);';
+//     document.head.appendChild(scriptEl);
+// });
