@@ -11,12 +11,12 @@
 // @include *://chat.meta.stackexchange.com/*
 // ==/UserScript==
 
-// this will inject the code as a <script> element, because Safari doesn't seem to be
-// using the page's jQuery properly
+// this will inject the code as a <script> element, because Safari doesn't seem
+// to be using the page's jQuery properly
 function with_jquery(f) {
     var script = document.createElement('script');
     script.type = 'text/javascript';
-    script.textContent = "(" + f.toString() + ")(jQuery)";
+    script.textContent = '(' + f + ')(jQuery)';
     document.body.appendChild(script);
 }
 
@@ -287,10 +287,3 @@ function getEvents(roomid, callback) {
 }
 
 });
-
-// window.addEventListener('load', function() {
-//     var scriptEl = document.createElement('script');
-//     scriptEl.type = 'text/javascript';
-//     scriptEl.text = '(' + chatception + ')(jQuery);';
-//     document.head.appendChild(scriptEl);
-// });
