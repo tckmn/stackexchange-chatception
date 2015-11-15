@@ -138,13 +138,20 @@ var observer = new MutationObserver(function(mutations) {
 observer.observe(roomsList, { childList: true });
 
 // set up websocket
-var sock = getSock();
-sock.onmessage = function(e) {
-    var data = JSON.parse(e.data);
-    handleEvents([].concat.apply([], Object.keys(data).map(function(k) {
-        return data[k]['e'];
-    })).filter(function(x) { return x; }));
-}
+var sock = getSock(),
+    onmessage = function(e) {
+        var data = JSON.parse(e.data);
+        handleEvents([].concat.apply([], Object.keys(data).map(function(k) {
+            return data[k]['e'];
+        })).filter(function(x) { return x; }));
+    },
+    onclose = function() {
+        sock = getSock();
+        sock.onmessage = onmessage;
+        sock.onclose = onclose;
+    };
+sock.onmessage = onmessage;
+sock.onclose = onclose;
 
 function handleEvents(events, suppressUnread) {
     if (!events) return;
@@ -282,7 +289,21 @@ function handleEvents(events, suppressUnread) {
 };
 
 // get the WebSocket object for chat. TODO: make this async.
-function getSock() { return new WebSocket(JSON.parse($.ajax({type: 'POST', url: 'http://' + location.host + '/ws-auth', data: {roomid: CHAT.CURRENT_ROOM_ID, fkey: fkey().fkey}, async: false}).responseText)['url'] + '?l=' + JSON.parse($.ajax({type: 'POST', url: 'http://' + location.host + '/chats/' + CHAT.CURRENT_ROOM_ID + '/events', data: {fkey: fkey().fkey}, async: false}).responseText)['time']); }
+function getSock() {
+    return new WebSocket(JSON.parse($.ajax({
+            type: 'POST',
+            url: 'http://' + location.host + '/ws-auth',
+            data: {roomid: CHAT.CURRENT_ROOM_ID,
+            fkey: fkey().fkey
+        }, async: false}).responseText)['url'] +
+        '?l=' +
+        JSON.parse($.ajax({
+            type: 'POST',
+            url: 'http://' + location.host + '/chats/' + CHAT.CURRENT_ROOM_ID + '/events',
+            data: {fkey: fkey().fkey},
+            async: false
+        }).responseText)['time']);
+}
 // preload some previous messages (used when the page first loads)
 function getEvents(roomid, callback) {
     $.ajax({
