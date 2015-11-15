@@ -48,6 +48,13 @@ function addUnread(n, s) {
 function unreadCount(s) {
     return +(s.match(/^(?:\(\d*\*?\) )?\[(\d+)\]/) || [0,0])[1];
 }
+function fixTitle() {
+    var unread = [].slice.apply($('#my-rooms>li>a').map(function() {
+        return unreadCount(this.textContent);
+    })).reduce(function(a, b) { return a+b; });
+    document.title = addUnread(unread - unreadCount(document.title),
+            document.title);
+}
 
 var MSG_LIST_WIDTH = 500,
     MSG_LIST_HEIGHT = 300,
@@ -118,7 +125,7 @@ function initRoom(room) {
         var rn = links[links.length-1];
         var unread = unreadCount(rn.textContent);
         rn.textContent = addUnread(-unread, rn.textContent);
-        document.title = addUnread(-unread, document.title);
+        fixTitle();
     });
     room.addEventListener('mouseleave', function() {
         msgWrapper.style.display = 'none';
