@@ -86,7 +86,7 @@ function initRoom(room) {
 
     // input box and button to send messages
     var sendMsg = function() {
-        $.post('http://' + location.host + '/chats/' + room.id.slice(5) + '/messages/new', {
+        $.post(location.protocol + '//' + location.host + '/chats/' + room.id.slice(5) + '/messages/new', {
             text: sendInput.value,
             fkey: fkey().fkey
         });
@@ -178,7 +178,7 @@ function handleEvents(events, suppressUnread) {
             var msgUser = document.createElement('td');
             var msgUserLink = document.createElement('a');
             msgUser.appendChild(msgUserLink);
-            msgUserLink.href = 'http://' + location.host + '/users/' + msg['user_id'];
+            msgUserLink.href = location.protocol + '//' + location.host + '/users/' + msg['user_id'];
             msgUserLink.textContent = msg['user_name'];
             msgUser.style.padding = '5px';
             msgUser.style.maxWidth = Math.floor(MSG_LIST_WIDTH * 0.15) + 'px';
@@ -204,7 +204,7 @@ function handleEvents(events, suppressUnread) {
                 actionDelete.textContent = 'delete';
                 actionDelete.addEventListener('click', function() {
                     if (confirm('Are you sure you want to delete this message?')) {
-                        $.post('http://' + location.host + '/messages/' + msg['message_id'] + '/delete', {
+                        $.post(location.protocol + '//' + location.host + '/messages/' + msg['message_id'] + '/delete', {
                             fkey: fkey().fkey
                         });
                     }
@@ -215,7 +215,7 @@ function handleEvents(events, suppressUnread) {
                 actionEdit.textContent = 'edit';
                 actionEdit.addEventListener('click', function() {
                     var editTo = prompt('Edit to what?', msg['content']);
-                    $.post('http://' + location.host + '/messages/' + msg['message_id'], {
+                    $.post(location.protocol + '//' + location.host + '/messages/' + msg['message_id'], {
                         fkey: fkey().fkey,
                         text: editTo === null ? msg['content'] : editTo
                     });
@@ -249,7 +249,7 @@ function handleEvents(events, suppressUnread) {
             // timestamp and permalink
             var msgDate = document.createElement('td');
             var msgDateLink = document.createElement('a');
-            msgDateLink.href = 'http://' + location.host + '/transcript/message/' + msg['message_id'] + '#' + msg['message_id'];
+            msgDateLink.href = location.protocol + '//' + location.host + '/transcript/message/' + msg['message_id'] + '#' + msg['message_id'];
             var d = new Date(msg['time_stamp'] * 1000);
             var days = Math.floor(new Date().getTime() / (3600*24*1000)) - Math.floor(d.getTime() / (3600*24*1000));
             if (days) {
@@ -299,14 +299,14 @@ function handleEvents(events, suppressUnread) {
 function getSock() {
     return new WebSocket(JSON.parse($.ajax({
             type: 'POST',
-            url: 'http://' + location.host + '/ws-auth',
+            url: location.protocol + '//' + location.host + '/ws-auth',
             data: {roomid: CHAT.CURRENT_ROOM_ID,
             fkey: fkey().fkey
         }, async: false}).responseText)['url'] +
         '?l=' +
         JSON.parse($.ajax({
             type: 'POST',
-            url: 'http://' + location.host + '/chats/' + CHAT.CURRENT_ROOM_ID + '/events',
+            url: location.protocol + '//' + location.host + '/chats/' + CHAT.CURRENT_ROOM_ID + '/events',
             data: {fkey: fkey().fkey},
             async: false
         }).responseText)['time']);
@@ -315,7 +315,7 @@ function getSock() {
 function getEvents(roomid, callback) {
     $.ajax({
         type: 'POST',
-        url: 'http://' + location.host + '/chats/' + roomid + '/events',
+        url: location.protocol + '//' + location.host + '/chats/' + roomid + '/events',
         data: {fkey: fkey().fkey, mode: 'Messages', msgCount: MSG_LIST_MAX-1, since: 0},
         success: function(data) { callback(data['events']); }
     });
